@@ -1,52 +1,51 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
 import type { BlogPost } from '@/types/BlogPost';
+import { Link } from '@inertiajs/vue3';
+import { defineProps } from 'vue';
 
-const route = useRoute();
-const postId = ref(route.params.id);
-const post = ref<BlogPost>({}as BlogPost);
+const props = defineProps({
+    post: {
+        type: Object as () => BlogPost,
+        required: true,
+    },
+});
 
-const capitalizeFirstLetter = (string) => {
+const capitalizeFirstLetter = (string: string | null | undefined) => {
     if (!string) return '';
     return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
 };
-
-onMounted(() => {
-    fetchPost();
-});
 </script>
 
 <template>
     <div class="single-post">
         <div class="feature-img">
-            <img v-if="post.post_image" :src="'/storage/test/' + post.post_image" class="img-fluid" alt="post image" />
-            <img v-else class="img-fluid" src="/storage/test/imagenotfound.png" alt="image not found" />
+            <img v-if="props.post.post_image" :src="'/storage/test/' + props.post.post_image" class="img-fluid" alt="post image" />
+            <img v-else class="img-fluid" src="/public/imagenotfound.png" alt="image not found" />
         </div>
         <div class="blog_details">
-            <h1>
-                {{ post.title }}
-            </h1>
+            <Link :href="route('posts.show', { id: props.post.id })">
+                  <b> {{ props.post.title }} </b>
+            </Link>
             <ul class="blog-info-link mb-4 mt-3">
                 <li>
-                    <router-link :to="'/categories/' + post.category.slug" v-if="post.category">
-                        <i class="fa fa-user"></i>{{ capitalizeFirstLetter(post.category.title) }}
-                    </router-link>
-                    <span v-else><i class="fa fa-user"></i> No Category </span>
+                    <Link :href="`/categories/${props.post.category?.slug}`" v-if="props.post.category">
+                        <i class="fa fa-user"></i>{{ capitalizeFirstLetter(props.post.category.title) }}
+                    </Link>
+                    <span v-else><i class="fa fa-user"></i> Нет категории </span>
                 </li>
                 <li>
-                    <a href="#"><i class="fa fa-comments"></i>{{ post.comments_count }} Комментариев</a>
+                    <Link href="#"><i class="fa fa-comments"></i>{{ props.post.comments_count }} Комментариев</Link>
                 </li>
             </ul>
             <p class="excerpt">
-                {{ post.excerpt }}
+                {{ props.post.excerpt }}
             </p>
             <div class="quote-wrapper">
                 <div class="quotes">
-                    {{ post.excerpt }}
+                    {{ props.post.excerpt }}
                 </div>
             </div>
-            <p v-html="post.content_html"></p>
+            <p v-html="props.post.content_html"></p>
         </div>
     </div>
 </template>
