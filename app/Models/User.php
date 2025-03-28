@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -61,8 +62,9 @@ class User extends Authenticatable
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function likes(): HasMany
+    public function likedPosts(): BelongsToMany
     {
-        return $this->hasMany(Like::class); // Пользователь имеет много лайков
+        return $this->belongsToMany(BlogPost::class, 'likes', 'user_id', 'blog_post_id')
+            ->withTimestamps(); // Если в таблице likes есть поля created_at и updated_at
     }
 }

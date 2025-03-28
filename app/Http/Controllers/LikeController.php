@@ -3,52 +3,51 @@
 namespace App\Http\Controllers;
 
 use App\Models\BlogPost;
-use App\Models\Like;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class LikeController extends Controller
 {
-    public function like(Request $request, BlogPost $blogPost)
+    public function like(BlogPost $blogPost)
+    {
+
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'likesCount' => $blogPost->likes()->count(),
+                'hasLiked' => false, // Пользователь не залогинен, лайкнуть нельзя
+            ]);
+        }
+
+        // Проверяем, не лайкнул ли пользователь уже этот пост
+        if (!$blogPost->likes()->where('user_id', $user->id)->exists()) {
+            $blogPost->likes()->attach($user->id);
+        }
+
+        return response()->json([
+            'likesCount' => $blogPost->likes()->count(),
+            'hasLiked' => true,
+        ]);
+    }
+
+    public function unlike(BlogPost $blogPost)
     {
         $user = Auth::user();
 
         if (!$user) {
-            return back()->with('error', 'Необходимо войти в систему для того, чтобы поставить лайк.');
+            return response()->json([
+                'likesCount' => $blogPost->likes()->count(),
+                'hasLiked' => false ,
+            ]);
         }
 
-        if ($existingLike = Like::where('user_id', $user->id)
-            ->where('blog_post_id', $blogPost->id)
-            ->first()) {
-            return back()->with('error', 'Вы уже поставили лайк этому посту.');
-        }
+        // Открепляем лайк пользователя от поста
+        $blogPost->likes()->detach($user->id);
 
-        $like = new Like([
-            'user_id' => $user->id,
-            'blog_post_id' => $blogPost->id,
+        return response()->json([
+            'likesCount' => $blogPost->likes()->count(),
+            'hasLiked' => false,
         ]);
-        $blogPost->likes()->save($like);
-
-        return back()->with('success', 'Лайк поставлен!');
     }
-
-    public function unlike(Request $request, BlogPost $blogPost){
-        $user = Auth::user();
-
-        if (!$user) {
-            return back()->with('error', 'Необходимо войти в систему для того, чтобы убрать лайк.');
-        }
-
-        $like = Like::where('user_id', $user->id)
-            ->where('blog_post_id', $blogPost->id)
-            ->first();
-
-        if ($like) {
-            $like->delete();
-            return back()->with('success', 'Лайк убран.');
-        }
-
-        return back()->with('error', 'Лайк не найден.'); // Если лайк не найден (возможно, пользователь не лайкал пост)
-    }
-
 }

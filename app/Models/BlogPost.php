@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -72,13 +73,12 @@ class BlogPost extends Model
         return $this->hasMany(Comment::class, 'post_id');
     }
 
-
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function likes(): HasMany
+    public function likes(): BelongsToMany
     {
-        return $this->hasMany(Like::class); // Пост имеет много лайков
+        return $this->belongsToMany(User::class, 'likes', 'blog_post_id', 'user_id')
+            ->withTimestamps();
     }
-
 }

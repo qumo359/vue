@@ -3,6 +3,10 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { type BreadcrumbItem } from '@/types';
 import { computed } from 'vue';
+import type BlogPost from '@/Models/BlogPost';
+import type BlogCategory from '@/Models/BlogCategory';
+import type Comment from '@/Models/BlogCategory';
+import LikeButton from '@/components/LikeButton.vue';
 
 interface BlogPostProps {
     post: {
@@ -10,20 +14,15 @@ interface BlogPostProps {
         title: string;
         slug: string;
         post_image: string | null;
-        category: {
-            title: string;
-            slug: string;
-        };
-        categorySlug: string;
         comments: any[];
         excerpt: string;
         content_html: string;
         likes: any[];
         created_at: string;
     };
-    comments: any[];
-    categories: any[];
-    latestPosts: any[];
+    comments: Comment[];
+    categories: BlogCategory[];
+    latestPosts: BlogPost[];
     prev: {
         id: number;
         title: string;
@@ -36,14 +35,16 @@ interface BlogPostProps {
         slug: string;
         post_image: string | null;
     } | null;
+    hasLikedPost: boolean;
+    postLikesCount: number;
 }
 
 const props = defineProps<BlogPostProps>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
-        href: '/dashboard',
+        title: 'Admin',
+        href: '/admin',
     },
     {
         title: 'Posts',
@@ -56,31 +57,17 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const user = computed(() => (route().has('auth.user') ? route().params.auth.user : null));
 const isLoggedIn = computed(() => !!user.value);
-const hasLiked = computed(() => isLoggedIn.value && props.post.likes.some(like => like.user_id === user.value?.id));
+//const hasLiked = computed(() => isLoggedIn.value && props.post.likes.some(like => like.user_id === user.value?.id));
+const currentHasLikedPost = ref(props.hasLikedPost);
+const currentPostLikesCount = ref(props.postLikesCount);
 
-const likeForm = useForm({});
-const unlikeForm = useForm({});
 const commentForm = useForm({
     comment: '',
 });
 
-const likePost = () => {
-    if (isLoggedIn.value) {
-        likeForm.post(route('blog.posts.like', props.post));
-    } else {
-        window.location.href = route('login');
-    }
-};
-
-const unlikePost = () => {
-    if (isLoggedIn.value) {
-        unlikeForm.post(route('blog.posts.unlike', props.post), {
-            method: 'post',
-        });
-    } else {
-        window.location.href = route('login');
-    }
-};
+// const postCategory = ($slug) : BlogCategory | undefined => {
+//     return props.categories.firstWhere('slug', $slug);
+// };
 
 const submitComment = () => {
     commentForm.post(route('blog.posts.comments.store', props.post), {
@@ -107,16 +94,14 @@ const submitComment = () => {
                                     class="img-fluid"
                                     alt="Post Image"
                                 />
-                                <img v-else src="/storage/test/imagenotfound.png" class="img-fluid" alt="Image Not Found" />
+                                <img v-else src="https://prnt.sc/PwCGX68hkHLq" class="img-fluid" alt="Image Not Found" />
                             </div>
                             <div class="blog_details">
                                 <h1>{{ props.post.title }}</h1>
-                                <ul class="blog-info-link mt-3 mb-4">
+                                <ul class="blog-info-link mb-4 mt-3">
                                     <li>
-                                        <Link :href="route('categories.show', props.post.categorySlug)">
-                                            <i class="fa fa-user"></i>{{
-                                                $filters.ucfirst($filters.lower(props.post.category.title))
-                                            }}
+                                        <Link :href="route('categories.show', props.post.category.slug)">
+                                            <i class="fa fa-user"></i>{{ $filters.ucfirst($filters.lower(props.post.category.title)) }}
                                         </Link>
                                     </li>
                                     <li>
@@ -134,37 +119,36 @@ const submitComment = () => {
                             <div class="d-sm-flex justify-content-between text-center">
                                 <p class="like-info">
                                     <span class="align-middle"><i class="fa fa-heart"></i></span>
-                                    {{ props.post.likes.length }} {{ $filters.trans_choice('Like|Likes', props.post.likes.length) }}
+                                    {{ currentLikesCount }} {{ $filters.trans_choice('Like|Likes', currentLikesCount) }}
                                 </p>
-                                <div class="col-sm-4 text-center my-2 my-sm-0">
-                                </div>
                                 <ul class="social-icons">
+                                    <LikeButton
+                                        :post-id="props.post.id"
+                                        :initial-has-liked="props.hasLikedPost"
+                                        :initial-likes-count="props.postLikesCount"
+                                        @liked="hndleLiked"
+                                        @unliked="handleUnliked"
+                                    />
                                     <li>
-                                        <template v-if="isLoggedIn">
-                                            <form v-if="hasLiked" @submit.prevent="unlikePost">
-                                                <button type="submit" class="btn btn-sm btn-danger">Убрать лайк</button>
-                                            </form>
-                                            <form v-else @submit.prevent="likePost">
-                                                <button type="submit" class="btn btn-sm btn-primary">Лайкнуть</button>
-                                            </form>
-                                        </template>
-                                        <Link v-else :href="route('login')" class="btn btn-sm btn-outline-secondary">
-                                            Войдите, чтобы лайкнуть
-                                        </Link>
+                                        <a href="https://facebook.com"><i class="fa fa-facebook-f"></i></a>
                                     </li>
-                                    <li><a href="https://facebook.com"><i class="fa fa-facebook-f"></i></a></li>
-                                    <li><a href="https://twitter.com"><i class="fa fa-twitter"></i></a></li>
-                                    <li><a href="https://dribble.com"><i class="fa fa-dribbble"></i></a></li>
-                                    <li><a href="https://behance.net"><i class="fa fa-behance.net"></i></a></li>
+                                    <li>
+                                        <a href="https://twitter.com"><i class="fa fa-twitter"></i></a>
+                                    </li>
+                                    <li>
+                                        <a href="https://dribble.com"><i class="fa fa-dribbble"></i></a>
+                                    </li>
+                                    <li>
+                                        <a href="https://behance.net"><i class="fa fa-behance.net"></i></a>
+                                    </li>
                                 </ul>
                             </div>
                         </div>
+
                         <div class="navigation-area">
                             <div class="row">
                                 <template v-if="props.prev">
-                                    <div
-                                        class="col-lg-6 col-md-6 col-12 nav-left flex-row d-flex justify-content-start align-items-center"
-                                    >
+                                    <div class="col-lg-6 col-md-6 col-12 nav-left d-flex justify-content-start align-items-center flex-row">
                                         <div class="thumb">
                                             <Link :href="route('blog.posts.show', props.prev.slug)">
                                                 <img
@@ -173,12 +157,7 @@ const submitComment = () => {
                                                     class="img-fluid"
                                                     alt=""
                                                 />
-                                                <img
-                                                    v-else
-                                                    src="/storage/test/imagenotfound.png"
-                                                    class="img-fluid"
-                                                    alt=""
-                                                />
+                                                <img v-else src="/storage/test/imagenotfound.png" class="img-fluid" alt="" />
                                             </Link>
                                         </div>
                                         <div class="detials">
@@ -190,11 +169,8 @@ const submitComment = () => {
                                     </div>
                                 </template>
                                 <template v-else>
-                                    <div
-                                        class="col-lg-6 col-md-6 col-12 nav-left flex-row d-flex justify-content-start align-items-center"
-                                    >
-                                        <div class="thumb">
-                                        </div>
+                                    <div class="col-lg-6 col-md-6 col-12 nav-left d-flex justify-content-start align-items-center flex-row">
+                                        <div class="thumb"></div>
                                         <div class="detials">
                                             <p>Предыдущий пост</p>
                                             <a>
@@ -204,9 +180,7 @@ const submitComment = () => {
                                     </div>
                                 </template>
                                 <template v-if="props.next">
-                                    <div
-                                        class="col-lg-6 col-md-6 col-12 nav-left flex-row d-flex justify-content-start align-items-center"
-                                    >
+                                    <div class="col-lg-6 col-md-6 col-12 nav-left d-flex justify-content-start align-items-center flex-row">
                                         <div class="thumb">
                                             <Link :href="route('blog.posts.show', props.next.slug)">
                                                 <img
@@ -215,12 +189,7 @@ const submitComment = () => {
                                                     class="img-fluid"
                                                     alt=""
                                                 />
-                                                <img
-                                                    v-else
-                                                    src="/storage/test/imagenotfound.png"
-                                                    class="img-fluid"
-                                                    alt=""
-                                                />
+                                                <img v-else src="/storage/test/imagenotfound.png" class="img-fluid" alt="" />
                                             </Link>
                                         </div>
                                         <div class="detials">
@@ -232,7 +201,7 @@ const submitComment = () => {
                                     </div>
                                 </template>
                                 <template v-else>
-                                    <div class="col-lg-6 col-md-6 col-12 nav-left flex-row d-flex justify-content-start align-items-center">
+                                    <div class="col-lg-6 col-md-6 col-12 nav-left d-flex justify-content-start align-items-center flex-row">
                                         <h4>Пусто</h4>
                                     </div>
                                 </template>
@@ -276,7 +245,9 @@ const submitComment = () => {
                                                     cols="30"
                                                     rows="9"
                                                     placeholder="Write Comment"
-                                                >Написать комментарий</textarea>
+                                                >
+Написать комментарий</textarea
+                                                >
                                             </div>
                                         </div>
                                     </div>
@@ -305,7 +276,15 @@ const submitComment = () => {
                                 <div class="thumb-wrap" v-for="latestPost in props.latestPosts" :key="latestPost.id">
                                     <div class="thumb">
                                         <Link :href="route('blog.posts.show', latestPost.slug)">
-                                            <img class="img-fluid" :src="latestPost.post_image ? `/storage/test/${latestPost.post_image}` : '/storage/test/imagenotfound.png'" alt="">
+                                            <img
+                                                class="img-fluid"
+                                                :src="
+                                                    latestPost.post_image
+                                                        ? `/storage/test/${latestPost.post_image}`
+                                                        : '/storage/test/imagenotfound.png'
+                                                "
+                                                alt=""
+                                            />
                                         </Link>
                                     </div>
                                     <div class="details">
@@ -318,9 +297,7 @@ const submitComment = () => {
                             </div>
                         </div>
                         <div v-else v-if="props.sidebar" v-html="props.sidebar"></div>
-                        <div v-else>
-                            @include('partials._sidebar')
-                        </div>
+                        <div v-else>@include('partials._sidebar')</div>
                     </div>
                 </div>
             </div>

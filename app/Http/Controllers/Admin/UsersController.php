@@ -5,23 +5,23 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class UsersController extends BaseController
 {
     public function index()
     {
         $users = \App\Models\User::all();
-        return view('blog.Admin.users.index', compact('users'));
+        return Inertia::render('Admin/Users/Index', compact('users'));
     }
 
     public function edit(User $user)
     {
-        return view('blog.Admin.users.edit',compact('user'));
+        return Inertia::render('Admin/Users/Edit', compact('user'));
     }
 
     public function update(Request $request, $user)
     {
-
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user,
@@ -31,20 +31,18 @@ class UsersController extends BaseController
         $user->update([
             'name' => $request->input('name'),
             'email' => $request->input('email'),
-            'password' => bcrypt($request->input('password')),
         ]);
 
-        return redirect('/Admin/blog/users')->with('success', 'Данные пользователя успешно обновлены.');
+        if ($request->filled('password')) {
+            $user->update(['password' => bcrypt($request->input('password'))]);
+        }
+
+        return redirect()->route('admin.users.index')->with('success', 'Данные пользователя успешно обновлены.');
     }
 
     public function destroy(User $user)
     {
-//        if (auth()->user()->id == $user->id) { // Защита от удаления самого себя
-//            return redirect()->route('Admin.users.index')->with('error', 'Вы не можете удалить самого себя.');
-//        }
-
         $user->delete();
-
-        return redirect()->route('Admin.users.index')->with('success', 'Пользователь успешно удален.');
+        return redirect()->route('admin.users.index')->with('success', 'Пользователь успешно удален.');
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BlogPost;
 use App\Models\BlogCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class PostController extends BaseController
@@ -14,9 +15,31 @@ class PostController extends BaseController
      */
     public function index(Request $request)
     {
-        $latestPosts = BlogPost::latest('created_at')->take(5)->get();
+        $latestPosts = BlogPost::latest('created_at')->take(5)->with('category')->get();
         $categories = BlogCategory::withCount('Posts')->get();
-        $items = BlogPost::paginate(10);
+        $items = BlogPost::with('category', 'likes')
+            ->withCount('likes')
+            ->withCount('comments')
+            ->paginate(10)
+            ->through(function ($post) {
+                $hasLiked = false;
+                if (Auth::check()) {
+                    $hasLiked = $post->likes->contains('user_id', Auth::id());
+                }
+
+                return [
+                    'id' => $post->id,
+                    'title' => $post->title,
+                    'excerpt' => $post->excerpt,
+                    'post_image' => $post->post_image,
+                    'category' => $post->category,
+                    'likes_count' => $post->likes_count,
+                    'comments_count' => $post->comments_count,
+                    'has_liked' => $hasLiked,
+                    'created_at' => $post->created_at,
+                    'updated_at' => $post->updated_at,
+                ];
+            });
 
         return Inertia::render('Posts/Index', [
             'posts' => $items,
@@ -74,22 +97,27 @@ class PostController extends BaseController
      */
     public function show(string $id)
     {
-        $post = BlogPost::findOrFail($id);
+        $post = BlogPost::findOrFail($id)->with('category', 'comments', 'likes');
         $categories = BlogCategory::withCount('Posts')->get();
-        $postCategorySlug = $categories[$post->category_id]['slug'];
         $latestPosts = BlogPost::latest('created_at')->take(5)->get();
         $comments = $post->comments()->whereNull('parent_id')->latest()->get();
         $prev = BlogPost::where('category_id', $post->category_id)->where('id', '<', $post->id)->first();
         $next = BlogPost::where('category_id', $post->category_id)->where('id', '>', $post->id)->first();
 
+        $hasLiked = false;
+        if (Auth::check()) {
+            $hasLiked = $post->likes->contains('user_id', Auth::id());
+        }
+
         return Inertia::render('Posts/Show', [
             'post' => $post,
-            'postCategorySlug' => $postCategorySlug,
             'comments' => $comments,
             'categories' => $categories,
             'latestPosts' => $latestPosts,
             'prev' => $prev,
             'next' => $next,
+            'hasLikedPost' => $hasLiked,
+            'postLikesCount' => $post->likes->count(),
         ]);
     }
 
