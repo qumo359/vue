@@ -3,19 +3,15 @@ import AdminLayout from '@/layouts/AdminLayout.vue';
 import AdminSidebar from '@/components/AdminSidebar.vue';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { ref, onMounted, computed } from 'vue';
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import Font from '@ckeditor/ckeditor5-font/src/font';
-import Essentials from '@ckeditor/ckeditor5-essentials/src/essentials';
-import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold';
-import Italic from '@ckeditor/ckeditor5-basic-styles/src/italic';
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import { useToast } from 'vue3-toastify';
+import { useCkeditor } from '@/composables/useCKEditor';
 
 const props = defineProps({
     item: Object,
     categoryList: Array,
     comments: Array,
 });
+
+
 
 const form = useForm({
     title: props.item?.title || '',
@@ -28,33 +24,33 @@ const form = useForm({
 });
 
 const editor = ref(null);
-const toast = useToast();
-const successMessage = computed(() => usePage().props.flash?.success);
+// const { editorRef, data: content_raw } = useCkeditor(editor, form.content_raw);
+ const successMessage = computed(() => usePage().props.flash?.success);
 const errors = computed(() => usePage().props.errors);
 
 onMounted(() => {
-    ClassicEditor
-        .create(editor.value, {
-            licenseKey: 'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NDE2NTExOTksImp0aSI6IjczNzExYjYxLTVhZGItNGY1Zi04MWI2LTdlYzQyNTI0MzQ2YSIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiLCJzaCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJsaWNlbnNlVHlwZSI6InRyaWFsIiwiZmVhdHVyZXMiOlsiKiJdLCJ2YyI6ImM0Mjg2N2M5In0.8ZafITx_lpqbj-g-hniggoivYqqxmXIJq3Gh26SQVAJ3tEJR2lgSchdT76Mmpy7gghP_ngL2L9wv1-4fNheckQ',
-            plugins: [Essentials, Bold, Italic, Font, Paragraph],
-            toolbar: [
-                'undo', 'redo', '|', 'bold', 'italic', '|',
-                'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor'
-            ],
-        })
-        .then(newEditor => {
-            newEditor.setData(form.content_raw);
-            newEditor.model.document.on('change:data', () => {
-                form.content_raw = newEditor.getData();
-            });
-        })
-        .catch(error => {
-            console.error(error);
-        });
-
-    if (successMessage.value) {
-        toast.success(successMessage.value);
-    }
+    // ClassicEditor
+    //     .create(editor.value, {
+    //         licenseKey: 'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NDE2NTExOTksImp0aSI6IjczNzExYjYxLTVhZGItNGY1Zi04MWI2LTdlYzQyNTI0MzQ2YSIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiLCJzaCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJsaWNlbnNlVHlwZSI6InRyaWFsIiwiZmVhdHVyZXMiOlsiKiJdLCJ2YyI6ImM0Mjg2N2M5In0.8ZafITx_lpqbj-g-hniggoivYqqxmXIJq3Gh26SQVAJ3tEJR2lgSchdT76Mmpy7gghP_ngL2L9wv1-4fNheckQ',
+    //         plugins: [Essentials, Bold, Italic, Font, Paragraph],
+    //         toolbar: [
+    //             'undo', 'redo', '|', 'bold', 'italic', '|',
+    //             'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor'
+    //         ],
+    //     })
+    //     .then(newEditor => {
+    //         newEditor.setData(form.content_raw);
+    //         newEditor.model.document.on('change:data', () => {
+    //             form.content_raw = newEditor.getData();
+    //         });
+    //     })
+    //     .catch(error => {
+    //         console.error(error);
+    //     });
+    //
+    // if (successMessage.value) {
+    //     toast.success(successMessage.value);
+    // }
 
     if (Object.keys(errors.value).length > 0) {
         for (const key in errors.value) {
@@ -78,6 +74,12 @@ const destroy = () => {
         form.delete(route('admin.posts.destroy', props.item.id));
     }
 };
+
+const config = ref({
+    theme: "dark",
+    minHeight: 600,
+    buttons: "bold,italic,underline,|,ul,ol,|,image,link",
+});
 </script>
 
 <template>
@@ -85,6 +87,7 @@ const destroy = () => {
         <template #sidebar>
             <AdminSidebar />
         </template>
+        <JoditEditor v-model="content" :config="config" />
 
         <form @submit.prevent="submit" enctype="multipart/form-data">
             <div class="row justify-content-center">
@@ -213,3 +216,11 @@ const destroy = () => {
         </div>
     </AdminLayout>
 </template>
+<style>
+.jodit_theme_summer {
+    --jd-color-background-default: #417505;
+    --jd-color-border: #474025;
+    --jd-color-panel: #5fd3a2;
+    --jd-color-icon: #8b572a;
+}
+</style>

@@ -39,7 +39,8 @@ class BlogPost extends Model
         'published_at',
         'is_published',
         'path',
-        'post_image'
+        'post_image',
+        'user_id', // Добавьте это поле
     ];
 
     /**

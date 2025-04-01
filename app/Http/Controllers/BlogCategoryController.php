@@ -18,6 +18,8 @@ class BlogCategoryController extends Controller
         $categories = (new \App\Models\BlogCategory)->withCount('Posts')->get();
         $latestPosts = BlogPost::latest('created_at')->take(5)->get();
 
-        return inertia('Categories/Show', [$posts, $categories, $latestPosts]);
+        return view('web.categories.show', compact('category', 'posts', 'categories','latestPosts')); // Передаем категорию и посты в шаблон
+
+        //return inertia('Categories/Show', [$posts, $categories, $latestPosts]);
     }
 }

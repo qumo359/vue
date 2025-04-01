@@ -2,7 +2,6 @@
 import type { BlogPost } from '@/types/BlogPost';
 import { Link, useForm } from '@inertiajs/vue3';
 import { defineProps, ref } from 'vue';
-import { Button } from '@/components/ui/button';
 import LikeButton from '@/components/LikeButton.vue';
 
 interface Props {
