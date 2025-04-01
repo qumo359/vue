@@ -128,6 +128,8 @@ const submitComment = () => {
                                         :initial-likes-count="props.postLikesCount"
                                         @liked="hndleLiked"
                                         @unliked="handleUnliked"
+                                        :has-liked-post = currentHasLikedPost
+                                        :post-likes-count= currentPostLikesCount
                                     />
                                     <li>
                                         <a href="https://facebook.com"><i class="fa fa-facebook-f"></i></a>

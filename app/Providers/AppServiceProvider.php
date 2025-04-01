@@ -2,6 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\BlogCategory;
+use App\Models\BlogPost;
+use App\Observers\BlogCategoryObserver;
+use App\Observers\BlogPostObserver;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
 
@@ -27,5 +32,10 @@ class AppServiceProvider extends ServiceProvider
                 ];
             }
         ]);
+        Schema::defaultStringLength(191);
+
+        BlogCategory::observe(BlogCategoryObserver::class);
+        BlogPost::observe(BlogPostObserver::class);
+
     }
 }

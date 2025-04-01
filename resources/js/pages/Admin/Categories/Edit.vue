@@ -1,15 +1,10 @@
 <script setup lang="ts">
 import AdminSidebar from '@/components/AdminSidebar.vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold';
-import Italic from '@ckeditor/ckeditor5-basic-styles/src/italic';
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import Essentials from '@ckeditor/ckeditor5-essentials/src/essentials';
-import Font from '@ckeditor/ckeditor5-font/src/font';
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
-import { useToast } from 'vue3-toastify';
+// import { useCkeditor } from '@/composables/useCkeditor';
+// import { useToast } from 'vue3-toastify';
 
 const props = defineProps({
     item: Object,
@@ -24,25 +19,26 @@ const form = useForm({
 });
 
 const editor = ref(null);
+const { editorRef, data: description } = useCkeditor(editor, form.description);
 const toast = useToast();
 const successMessage = computed(() => usePage().props.flash?.success);
 const errors = computed(() => usePage().props.errors);
 
 onMounted(() => {
-    ClassicEditor.create(editor.value, {
-        licenseKey: '...', // Вставьте ваш licenseKey, если есть
-        plugins: [Essentials, Bold, Italic, Font, Paragraph],
-        toolbar: ['undo', 'redo', '|', 'bold', 'italic', '|', 'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor'],
-    })
-        .then((newEditor) => {
-            newEditor.setData(form.description);
-            newEditor.model.document.on('change:data', () => {
-                form.description = newEditor.getData();
-            });
-        })
-        .catch((error) => {
-            console.error(error);
-        });
+    // ClassicEditor.create(editor.value, {
+    //     licenseKey: '...', // Вставьте ваш licenseKey, если есть
+    //     plugins: [Essentials, Bold, Italic, Font, Paragraph],
+    //     toolbar: ['undo', 'redo', '|', 'bold', 'italic', '|', 'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor'],
+    // })
+    //     .then((newEditor) => {
+    //         newEditor.setData(form.description);
+    //         newEditor.model.document.on('change:data', () => {
+    //             form.description = newEditor.getData();
+    //         });
+    //     })
+    //     .catch((error) => {
+    //         console.error(error);
+    //     });
 
     if (successMessage.value) {
         toast.success(successMessage.value);

@@ -20,23 +20,24 @@ const props = defineProps({
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Admin',
-        href: '/admin'
+        title: 'Posts',
+        href: '/'
     }
 ];
 
+
 const update = () => {
-    alert(1);
+    alert(posts);
 };
 </script>
 
 <template>
     <Head title="Posts" />
-    <AppLayout :breadcrumbs="breadcrumbs">
+    <AppLayout :breadcrumbs="breadcrumbs"> 111
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
             <div class="grid auto-rows-min gap-4 md:grid-cols-3">
                 <BlogPost
-                    v-for="post in posts.data"
+                    v-for="post in posts?.data"
                     :key="post.id"
                     :post="post"
                     :hasLikedPost="post.has_liked"
@@ -46,3 +47,5 @@ const update = () => {
         </div>
     </AppLayout>
 </template>
+
+
