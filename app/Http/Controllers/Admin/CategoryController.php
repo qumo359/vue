@@ -7,6 +7,7 @@ use App\Http\Requests\BlogCategoryCreateRequest;
 use App\Http\Requests\BlogCategoryUpdateRequest;
 use App\Models\BlogCategory;
 use App\Repositories\BlogCategoryRepository;
+use Illuminate\Routing\Route;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -40,7 +41,7 @@ class CategoryController extends BaseController
         }
         $item = (new BlogCategory())->create($data);
         if ($item) {
-            return redirect()->route('admin.categories.edit', $item->id)
+            return redirect()->route('admin.categories.index')
                 ->with(['success' => 'Успешно сохранено']);
         } else {
             return back()->withErrors(['msg' => 'Ошибка сохранения'])->withInput();
@@ -54,6 +55,7 @@ class CategoryController extends BaseController
             abort(404);
         }
         $categoryList = $this->blogCategoryRepository->getForComboBox();
+
         return Inertia::render('Admin/Categories/Edit', ['item' => $item, 'categoryList' => $categoryList]);
     }
 
@@ -70,6 +72,20 @@ class CategoryController extends BaseController
                 ->with(['success' => 'Успешно сохранено']);
         } else {
             return back()->withErrors(['msg' => 'Ошибка сохранения'])->withInput();
+        }
+    }
+
+    public function destroy($id)
+    {
+        $item = $this->blogCategoryRepository->getEdit($id);
+        if (empty($item)) {
+            return back()->withErrors(['msg' => "Категория id=[$id] не найдена"]);
+        }
+        $result = BlogCategory::destroy($id);
+        if ($result) {
+            return redirect()->route('admin.categories.index')-with(['success' => 'Успешно удалено']);
+        } else {
+            return back()->withErrors(['msg' => "Ошибка удаления. Категория id=[$id] не удалена"]);
         }
     }
 }

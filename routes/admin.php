@@ -17,7 +17,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'namespace' => 'App\Http\Co
     Route::put('/users/{user}', 'UsersController@update')->name('users.update');
     Route::delete('/users/{user}', 'UsersController@destroy')->name('users.destroy');
     Route::resource('posts', 'PostController')->names('posts');
-    // Route::put('/blog/posts/{post}', 'PostController@update')->name('blog.update'); // Можно удалить этот дубликат
+    Route::get('/posts/{post}/edit', 'PostController@edit')->name('posts.edit');
 });
 Route::get('admin', function () {
     return Inertia::render('Admin');

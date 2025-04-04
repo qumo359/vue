@@ -10,9 +10,11 @@ use Inertia\Inertia;
 
 class PostController extends BaseController
 {
-    public function showSite() {
+    public function showSite()
+    {
         return view('web.index');
     }
+
     /**
      * Display a listing of the resource.
      */
@@ -175,6 +177,6 @@ class PostController extends BaseController
     public
     function destroy(string $id)
     {
-        //
+        dd(__METHOD__, $id);
     }
 }

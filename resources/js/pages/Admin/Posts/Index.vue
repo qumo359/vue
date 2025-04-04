@@ -1,9 +1,19 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import AdminSidebar from '@/components/AdminSidebar.vue';
- import ResultMessages from '@/components/ResultMessages.vue';
-import { Link } from '@inertiajs/vue3';
+// import AdminSidebar from '@/components/AdminSidebar.vue';
+// import ResultMessages from '@/components/ResultMessages.vue';
+import type { BreadcrumbItem } from '@/types';
+import { Link, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
+
+const form = useForm({});
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Posts',
+        href: '/posts',
+    },
+];
 
 const props = defineProps({
     paginator: {
@@ -16,24 +26,40 @@ const props = defineProps({
     },
 });
 
+const destroy = (post) => {
+    console.log('Функция destroy вызвана', post.id);
+
+    if (confirm(`Вы уверены, что хотите удалить пост? "${post.title}"?`)) {
+        form.delete(route('admin.posts.destroy', post.id));
+    }
+};
+
 const posts = computed(() => props.paginator.data);
 </script>
 
 <template>
-    <AdminLayout title="Управление Статьями">
-        <ResultMessages />
+    <AdminLayout title="Управление Статьями" :breadcrumbs="breadcrumbs">
         <div class="container p-3">
-        <nav class="navbar navbar-toggleable-md navbar-light bg-faded">
-            <Link class="btn btn-primary" :href="route('admin.posts.create')">Написать</Link>
-            <Link v-if="flash.deleted_id" class="btn btn-danger" :href="route('admin.posts.restore', flash.deleted_id)">Отменить удаление</Link>
-        </nav>
+            <nav class="flex gap-2">
+                <Link
+                    class="inline-flex items-center rounded-md border border-transparent bg-blue-500 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-blue-700 focus:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:bg-blue-900"
+                    :href="route('admin.posts.create')"
+                >
+                    Написать
+                </Link>
+                <Link
+                    v-if="flash.deleted_id"
+                    class="inline-flex items-center rounded-md border border-transparent bg-red-500 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition duration-150 ease-in-out hover:bg-red-700 focus:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 active:bg-red-900"
+                    :href="route('admin.posts.restore', flash.deleted_id)"
+                >
+                    Отменить удаление
+                </Link>
+            </nav>
         </div>
-    </AdminLayout>
 
         <div class="data-table-container">
-            <h2 class="table-title">Список пользователей</h2>
-                <table class="data-table">
-                    <thead>
+            <table class="data-table">
+                <thead>
                     <tr>
                         <th>#</th>
                         <th>Автор</th>
@@ -41,24 +67,33 @@ const posts = computed(() => props.paginator.data);
                         <th>Заголовок</th>
                         <th>Дата публикации</th>
                     </tr>
-                    </thead>
-                    <tbody>
-                    <tr v-for="post in posts" :key="post.id" :style="{ backgroundColor: !post.is_published ? 'darkgrey' : '' }">
+                </thead>
+                <tbody>
+                    <tr v-for="post in posts" :key="post.id" :style="{ backgroundColor: !post.is_published ? 'grey' : '' }">
                         <td>{{ post.id }}</td>
                         <td>{{ post.user.name }}</td>
                         <td>{{ post.category.title }}</td>
                         <td>
                             <Link :href="route('admin.posts.edit', post.id)">{{ post.title }}</Link>
                         </td>
-                        <td>{{ post.published_at ? new Date(post.published_at).toLocaleDateString() + ' ' + new Date(post.published_at).toLocaleTimeString() : '' }}</td>
                         <td>
-                            <button class="edit-button">Редактировать</button>
-                            <button class="delete-button">Удалить</button>
+                            {{
+                                post.published_at
+                                    ? new Date(post.published_at).toLocaleDateString() + ' ' + new Date(post.published_at).toLocaleTimeString()
+                                    : ''
+                            }}
                         </td>
-
+                        <td>
+                            <div class="flex">
+                                <Link :href="route('admin.posts.edit', post.id)">
+                                    <button class="edit-button">Редактировать</button>
+                                </Link>
+                                <button class="delete-button" @click="destroy(post)">Удалить</button>
+                            </div>
+                        </td>
                     </tr>
-                    </tbody>
-                </table>
+                </tbody>
+            </table>
         </div>
 
         <div v-if="props.paginator.total > props.paginator.per_page" class="mt-3">
@@ -71,21 +106,22 @@ const posts = computed(() => props.paginator.data);
                 </ul>
             </nav>
         </div>
-
-
+    </AdminLayout>
 </template>
 
 <style scoped>
 .data-table-container {
-    background-color: #fff; /* Белый фон */
-    color: #4a5568; /* Темно-серый текст */
+    background-color: #121212;
+    color: #dedede;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.12),
+        0 1px 2px rgba(0, 0, 0, 0.24);
 }
 
 .table-title {
-    color: #718096; /* Серый заголовок */
+    color: #718096;
     margin-bottom: 15px;
     font-size: 1.25rem;
     font-weight: 500;
@@ -100,22 +136,22 @@ const posts = computed(() => props.paginator.data);
 .data-table td {
     padding: 12px 15px;
     text-align: left;
-    border-bottom: 1px solid #e2e8f0; /* Светлый разделитель строк */
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .data-table th {
-    background-color: #f7fafc; /* Очень светлый серый для заголовков */
+    background-color: #121212;
     font-weight: 600;
-    color: #2d3748;
+    color: #d4ef1f;
 }
 
 .data-table tbody tr:nth-child(even) {
-    background-color: #edf2f7; /* Ещё более светлый серый для четных строк */
+    background-color: #121212;
 }
 
 .edit-button,
 .delete-button {
-    background-color: #3182ce; /* Синий цвет для кнопки "Редактировать" */
+    background-color: #3182ce;
     color: #fff;
     border: none;
     padding: 8px 12px;
@@ -127,7 +163,7 @@ const posts = computed(() => props.paginator.data);
 }
 
 .delete-button {
-    background-color: #e53e3e; /* Красный цвет для кнопки "Удалить" */
+    background-color: #e53e3e;
 }
 
 .edit-button:hover {

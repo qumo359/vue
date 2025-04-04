@@ -40,9 +40,15 @@ class UsersController extends BaseController
         return redirect()->route('admin.users.index')->with('success', 'Данные пользователя успешно обновлены.');
     }
 
-    public function destroy(User $user)
+    public function destroy($id)
     {
-        $user->delete();
-        return redirect()->route('admin.users.index')->with('success', 'Пользователь успешно удален.');
+        $user = new User(['id' => $id]);
+        $result = User::destroy($id);
+        if ($result) {
+            return redirect()->route('admin.users.index')
+                ->with(['deleted_id' => $id, 'success' => "Пользователь {$user} успешно удален."]);
+        } else {
+            return back()->withErrors(['msg' => 'Пользователь не найден.']);
+        }
     }
 }

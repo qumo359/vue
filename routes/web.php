@@ -27,7 +27,7 @@ Route::get('/blog/{slug}', [\App\Http\Controllers\PostController::class, 'showSi
 
 
 
-Route::resource('posts', \App\Http\Controllers\PostController::class)->names('posts'); // Ресурсные маршруты для постов
+Route::resource('posts', \App\Http\Controllers\PostController::class)->names('post'); // Ресурсные маршруты для постов
 
 // Like Routes (маршруты для лайков)
 Route::post('/posts/{blogPost}/like', [\App\Http\Controllers\LikeController::class, 'like'])->name('posts.like');

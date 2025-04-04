@@ -3,14 +3,32 @@ import AdminLayout from '@/layouts/AdminLayout.vue';
 import AdminSidebar from '@/components/AdminSidebar.vue';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { ref, onMounted, computed } from 'vue';
-import { useCkeditor } from '@/composables/useCKEditor';
+import type { BreadcrumbItem } from '@/types';
 
 const props = defineProps({
     item: Object,
     categoryList: Array,
-    comments: Array,
+    comments: Array
 });
 
+const page = usePage();
+
+
+const breadcrumbs = computed(() => {
+    const postId = page.props.item?.id;
+
+    return [
+        {
+            title: 'Posts',
+            href: '/posts'
+        },
+        {
+            title: 'Post Edit',
+            href: router.resolve(route('posts.edit', postId)).href,
+            // href: `/posts/${page.props.item?.id}/edit`,
+        },
+    ];
+});
 
 
 const form = useForm({
@@ -20,12 +38,12 @@ const form = useForm({
     category_id: props.item?.category_id || null,
     slug: props.item?.slug || '',
     excerpt: props.item?.excerpt || '',
-    is_published: !!props.item?.is_published,
+    is_published: !!props.item?.is_published
 });
 
 const editor = ref(null);
 // const { editorRef, data: content_raw } = useCkeditor(editor, form.content_raw);
- const successMessage = computed(() => usePage().props.flash?.success);
+const successMessage = computed(() => usePage().props.flash?.success);
 const errors = computed(() => usePage().props.errors);
 
 onMounted(() => {
@@ -62,7 +80,7 @@ onMounted(() => {
 const submit = () => {
     if (props.item?.exists) {
         form.post(route('admin.blog.update', props.item.id), {
-            _method: 'patch',
+            _method: 'patch'
         });
     } else {
         form.post(route('admin.posts.store'));
@@ -76,9 +94,10 @@ const destroy = () => {
 };
 
 const config = ref({
-    theme: "dark",
-    minHeight: 600,
-    buttons: "bold,italic,underline,|,ul,ol,|,image,link",
+    theme: 'dark',
+    maxHeight: 600,
+    maxWidth: 800,
+    buttons: 'bold,italic,underline,|,ul,ol,|,image,link'
 });
 </script>
 
@@ -99,38 +118,36 @@ const config = ref({
                     </div>
                 </div>
             </div>
-            <br>
+            <br />
             <div class="row justify-content-center" v-if="props.item?.exists">
                 <div class="col-md-8">
                     <div class="card">
-                        <div class="card-body">
-                            ID: {{ props.item.id }}
-                        </div>
+                        <div class="card-body">ID: {{ props.item.id }}</div>
                     </div>
                 </div>
             </div>
-            <br>
+            <br />
             <div class="row justify-content-center" v-if="props.item?.exists">
                 <div class="col-md-8">
                     <div class="card">
                         <div class="card-body">
                             <div class="form-group">
                                 <label for="title">Создано</label>
-                                <input type="text" :value="props.item?.created_at" class="form-control" disabled>
+                                <input type="text" :value="props.item?.created_at" class="form-control" disabled />
                             </div>
                             <div class="form-group">
                                 <label for="title">Изменено</label>
-                                <input type="text" :value="props.item?.updated_at" class="form-control" disabled>
+                                <input type="text" :value="props.item?.updated_at" class="form-control" disabled />
                             </div>
                             <div class="form-group">
                                 <label for="title">Опубликовано</label>
-                                <input type="text" :value="props.item?.published_at" class="form-control" disabled>
+                                <input type="text" :value="props.item?.published_at" class="form-control" disabled />
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <br>
+            <br />
             <div class="row justify-content-center">
                 <div class="col-md-8">
                     <div class="card">
@@ -146,12 +163,12 @@ const config = ref({
                                     <a class="nav-link" data-bs-toggle="tab" href="#adddata" role="tab">Доп данные</a>
                                 </li>
                             </ul>
-                            <br>
+                            <br />
                             <div class="tab-content">
                                 <div class="tab-pane active" id="maindata" role="tabpanel">
                                     <div class="form-group">
                                         <label for="title">Заголовок</label>
-                                        <input v-model="form.title" id="title" type="text" class="form-control" minlength="3" required>
+                                        <input v-model="form.title" id="title" type="text" class="form-control" minlength="3" required />
                                     </div>
                                     <div class="form-group">
                                         <label for="content_raw">Статья</label>
@@ -159,9 +176,15 @@ const config = ref({
                                     </div>
                                     <div class="form-group pt-2">
                                         <label for="post_image">Изображение поста</label>
-                                        <input type="file" name="post_image" id="post_image" class="form-control-file" @input="form.post_image = $event.target.files[0]">
+                                        <input
+                                            type="file"
+                                            name="post_image"
+                                            id="post_image"
+                                            class="form-control-file"
+                                            @input="form.post_image = $event.target.files[0]"
+                                        />
                                         <div v-if="props.item?.post_image" class="mt-2">
-                                            <img :src="'/storage/test/' + props.item.post_image" alt="Текущее изображение" style="max-width: 200px;">
+                                            <img :src="'/storage/test/' + props.item.post_image" alt="Текущее изображение" style="max-width: 200px" />
                                         </div>
                                     </div>
                                 </div>
@@ -176,14 +199,14 @@ const config = ref({
                                     </div>
                                     <div class="form-group">
                                         <label for="slug">Идентификатор</label>
-                                        <input v-model="form.slug" id="slug" type="text" class="form-control">
+                                        <input v-model="form.slug" id="slug" type="text" class="form-control" />
                                     </div>
                                     <div class="form-group">
                                         <label for="excerpt">Выдержка</label>
                                         <textarea v-model="form.excerpt" id="excerpt" class="form-control" rows="3"></textarea>
                                     </div>
                                     <div class="form-check">
-                                        <input v-model="form.is_published" type="checkbox" class="form-check-input" value="1" id="is_published">
+                                        <input v-model="form.is_published" type="checkbox" class="form-check-input" value="1" id="is_published" />
                                         <label class="form-check-label" for="is_published">Опубликовано</label>
                                     </div>
                                 </div>
@@ -217,10 +240,16 @@ const config = ref({
     </AdminLayout>
 </template>
 <style>
-.jodit_theme_summer {
-    --jd-color-background-default: #417505;
-    --jd-color-border: #474025;
-    --jd-color-panel: #5fd3a2;
-    --jd-color-icon: #8b572a;
+
+.form-group {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.card .card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 </style>
