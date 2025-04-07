@@ -3,10 +3,10 @@
         <form action="{{ route('post.search') }}" method="GET">
             <div class="form-group">
                 <div class="input-group mb-3">
-                    <input type="text" class="form-control" placeholder="Поиск..." name="query"
+                    <input type="text" class="form-control border 1px"  placeholder="Поиск..." name="query"
                            value="{{ request('query') }}"
                            onfocus="this.placeholder = ''"
-                           onblur="this.placeholder = 'Search Keyword'">
+                           onblur="this.placeholder = 'Поиск...'">
                     <div class="input-group-append">
                         <button class="btn" type="submit"><i class="fa fa-search"></i></button>
                     </div>
@@ -41,7 +41,7 @@
                          alt="NOimage">
                 @endif
                 <div class="media-body">
-                    <a href="single-blog.html">
+                    <a href="{{route('posts.show', $latestPost->id)}}">
                         <h3>{{$latestPost->title}}</h3>
                     </a>
                     <p>{{\Carbon\Carbon::create($latestPost->published_at)->format('d-M')}}</p>

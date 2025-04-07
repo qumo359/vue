@@ -38,20 +38,20 @@ const destroy = (category) => {
 const editor = ref(null);
 // const { editorRef, data: description } = useCkeditor(editor, form.description);
 // const toast = useToast();
-const successMessage = computed(() => usePage().props.flash?.success);
-const errors = computed(() => usePage().props.errors);
+// const successMessage = computed(() => usePage().props.flash?.success);
+// const errors = computed(() => usePage().props.errors);
 
-onMounted(() => {
-    if (successMessage.value) {
-        toast.success(successMessage.value);
-    }
-
-    if (Object.keys(errors.value).length > 0) {
-        for (const key in errors.value) {
-            toast.error(errors.value[key]);
-        }
-    }
-});
+// onMounted(() => {
+//     if (successMessage.value) {
+//         toast.success(successMessage.value);
+//     }
+//
+//     if (Object.keys(errors.value).length > 0) {
+//         for (const key in errors.value) {
+//             toast.error(errors.value[key]);
+//         }
+//     }
+// });
 
 const submit = () => {
     if (props.item?.exists) {
@@ -144,7 +144,7 @@ const submit = () => {
                                     >
                                         Сохранить
                                     </button>
-                                    <button class="delete-button" @click="destroy(item)">Удалить</button>
+                                    <button v-if="props.item?.id" class="delete-button" @click="destroy(props.item)">Удалить</button>
                                 </div>
                             </div>
                         </div>

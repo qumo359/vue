@@ -27,7 +27,10 @@ class LikeController extends Controller
             'user_id' => $user->id,
             'blog_post_id' => $blogPost->id,
         ]);
-        $blogPost->likes()->save($like);
+
+        $like->save();
+
+//        $blogPost->likes()->save($like);
 
         return back()->with('success', 'Лайк поставлен!');
     }

@@ -2,7 +2,7 @@
 import AdminSidebar from '@/components/AdminSidebar.vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import type { BreadcrumbItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
+import { Link, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -15,6 +15,16 @@ const breadcrumbs: BreadcrumbItem[] = [
 const props = defineProps({
     paginator: Object, // Типизируйте объект пагинатора
 });
+
+const destroy = (category) => {
+    console.log('Функция destroy вызвана', category.id);
+
+    if (confirm(`Вы уверены, что хотите удалить категорию? "${category.title}"?`)) {
+        form.delete(route('admin.categories.destroy', category.id));
+    }
+};
+const form = useForm({});
+
 
 const categories = computed(() => props.paginator.data);
 </script>
@@ -41,24 +51,24 @@ const categories = computed(() => props.paginator.data);
                             <table class="table-hover table text-center">
                                 <thead>
                                     <tr>
-                                        <th>#</th>
-                                        <th>Категория</th>
+                                        <th>Id</th>
+                                        <th>Категория №</th>
                                         <th>Родитель</th>
+                                        <th>Управление</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr v-for="category in categories" :key="category.id">
                                         <td>{{ category.id }}</td>
-                                        <td>
-                                            <Link :href="route('admin.categories.edit', category.id)">
-                                                {{ category.title }}
-                                            </Link>
-                                            <button class="delete-button" @click="destroy(category.id)">Удалить</button>
-
-                                        </td>
                                         <td :style="{ color: [0, 1].includes(category.parent_id) ? 'grey' : '' }">
                                             {{ category.parent_id }}
                                         </td>
+                                        <td>
+                                            <Link :href="route('admin.categories.edit', category.id)">
+                                                <u>{{ category.title }}</u>
+                                            </Link>
+                                        </td>
+                                                <td><button class="delete-button" @click="destroy(category)">Удалить</button></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -92,7 +102,7 @@ const categories = computed(() => props.paginator.data);
 
 <style>
 .delete-button {
-    background-color: #3182ce;
+    background-color: #ff0000;
     color: #fff;
     border: none;
     padding: 8px 12px;

@@ -83,7 +83,7 @@ class CategoryController extends BaseController
         }
         $result = BlogCategory::destroy($id);
         if ($result) {
-            return redirect()->route('admin.categories.index')-with(['success' => 'Успешно удалено']);
+            return redirect()->route('admin.categories.index')->with(['success' => 'Успешно удалено']);
         } else {
             return back()->withErrors(['msg' => "Ошибка удаления. Категория id=[$id] не удалена"]);
         }

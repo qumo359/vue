@@ -7,19 +7,18 @@
             <div class="row">
                 <div class="col-lg-8 mb-5 mb-lg-0">
                     <div class="blog_left_sidebar">
-                        <h1>{{$category->first()->title}}</h1>
+                        <h1>{{$category->title}}</h1>
                         @foreach($posts as $item)
                             <article class="blog_item">
                                 <div class="blog_item_img">
                                     @if($item->post_image)
-                                        {{-- Проверяем, есть ли путь к изображению --}}
                                         <img src="{{ asset('/storage/test/' . $item->post_image) }}"
                                              class="card-img rounded-0"
-                                             alt="{{ $item->title }}"> {{-- Выводим изображение --}}
+                                             alt="{{ $item->title }}">
                                     @else
 
                                         <img class="card-img rounded-0"
-                                             src="http://127.0.0.1/storage/test/imagenotfound.png" alt="">
+                                             src="http://127.0.0.2/storage/test/imagenotfound.png" alt="">
                                     @endif
                                     <a href="#" class="blog_item_date">
 

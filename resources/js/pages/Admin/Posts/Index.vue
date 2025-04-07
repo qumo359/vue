@@ -57,76 +57,82 @@ const posts = computed(() => props.paginator.data);
             </nav>
         </div>
 
-        <div class="data-table-container">
+        <div class="data-table-container rounded-md border border-gray-600 bg-gray-800 shadow-md">
             <table class="data-table">
                 <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Автор</th>
-                        <th>Категория</th>
-                        <th>Заголовок</th>
-                        <th>Дата публикации</th>
-                    </tr>
+                <tr>
+                    <th>#</th>
+                    <th>Автор</th>
+                    <th>Категория</th>
+                    <th>Заголовок</th>
+                    <th>Дата публикации</th>
+                    <th>Действия</th>
+                </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="post in posts" :key="post.id" :style="{ backgroundColor: !post.is_published ? 'grey' : '' }">
-                        <td>{{ post.id }}</td>
-                        <td>{{ post.user.name }}</td>
-                        <td>{{ post.category.title }}</td>
-                        <td>
-                            <Link :href="route('admin.posts.edit', post.id)">{{ post.title }}</Link>
-                        </td>
-                        <td>
-                            {{
-                                post.published_at
-                                    ? new Date(post.published_at).toLocaleDateString() + ' ' + new Date(post.published_at).toLocaleTimeString()
-                                    : ''
-                            }}
-                        </td>
-                        <td>
-                            <div class="flex">
-                                <Link :href="route('admin.posts.edit', post.id)">
-                                    <button class="edit-button">Редактировать</button>
-                                </Link>
-                                <button class="delete-button" @click="destroy(post)">Удалить</button>
-                            </div>
-                        </td>
-                    </tr>
+                <tr v-for="post in posts" :key="post.id" :style="{ backgroundColor: !post.is_published ? 'grey' : '' }">
+                    <td>{{ post.id }}</td>
+                    <td>{{ post.user.name }}</td>
+                    <td>{{ post.category.title }}</td>
+                    <td>
+                        <Link :href="route('admin.posts.edit', post.id)">{{ post.title }}</Link>
+                    </td>
+                    <td>
+                        {{
+                            post.published_at
+                                ? new Date(post.published_at).toLocaleDateString() + ' ' + new Date(post.published_at).toLocaleTimeString()
+                                : ''
+                        }}
+                    </td>
+                    <td>
+                        <div class="flex">
+                            <Link :href="route('admin.posts.edit', post.id)">
+                                <button class="edit-button">Редактировать</button>
+                            </Link>
+                            <button class="delete-button" @click="destroy(post)">Удалить</button>
+                        </div>
+                    </td>
+                </tr>
                 </tbody>
             </table>
         </div>
 
         <div v-if="props.paginator.total > props.paginator.per_page" class="mt-3">
             <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-center">
-                    <li v-for="(link, key) in props.paginator.links" :key="key" :class="['page-item', { active: link.active, disabled: !link.url }]">
-                        <Link v-if="link.url" class="page-link" :href="link.url" v-html="link.label"></Link>
-                        <span v-else class="page-link" v-html="link.label"></span>
-                    </li>
-                </ul>
+                <div class="flex justify-center">
+                    <div v-for="(link, key) in props.paginator.links" :key="key">
+                        <Link
+                            v-if="link.url"
+                            :href="link.url"
+                            :class="[
+                        'relative z-0 inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500',
+                        {'bg-indigo-500 text-white hover:bg-indigo-600': link.active},
+                        {'cursor-default text-gray-700': !link.url},
+                        key === 0 ? 'rounded-l-md' : '',
+                        key === props.paginator.links.length - 1 ? 'rounded-r-md' : '',
+                        key > 0 ? 'ml-px' : ''
+                    ]"
+                            v-html="link.label"
+                        ></Link>
+                        <span
+                            v-else
+                            :class="[
+                        'relative z-0 inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-500 cursor-default',
+                        {'bg-indigo-500 text-white': link.active},
+                        key === 0 ? 'rounded-l-md' : '',
+                        key === props.paginator.links.length - 1 ? 'rounded-r-md' : '',
+                        key > 0 ? 'ml-px' : ''
+                    ]"
+                            v-html="link.label"
+                        ></span>
+                    </div>
+                </div>
             </nav>
         </div>
     </AdminLayout>
 </template>
 
 <style scoped>
-.data-table-container {
-    background-color: #121212;
-    color: #dedede;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow:
-        0 1px 3px rgba(0, 0, 0, 0.12),
-        0 1px 2px rgba(0, 0, 0, 0.24);
-}
-
-.table-title {
-    color: #718096;
-    margin-bottom: 15px;
-    font-size: 1.25rem;
-    font-weight: 500;
-}
-
 .data-table {
     width: 100%;
     border-collapse: collapse;
